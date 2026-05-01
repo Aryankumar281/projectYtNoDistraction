@@ -1,0 +1,79 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Get a free hosted Postgres database in seconds: `npx create-db`
+
+generator client {
+  provider = "prisma-client-js"
+  engineType = "binary"
+}
+
+datasource db {
+  provider = "postgresql"
+  
+}
+
+model User {
+  id        String   @id @default(uuid())
+  name      String?
+  email     String   @unique
+  password  String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  playlists Playlist[]
+  notes     Note[]
+  progress  Progress[]
+}
+
+model Playlist {
+  id          String   @id @default(uuid())
+  title       String
+  description String?
+  source      String
+  userId      String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  user   User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  videos Video[]
+}
+
+model Video {
+  id         String   @id @default(uuid())
+  youtubeId  String
+  title      String
+  duration   Int?
+  source     String
+  order      Int
+  playlistId String
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  playlist Playlist   @relation(fields: [playlistId], references: [id], onDelete: Cascade)
+  progress Progress[]
+  notes    Note[]
+}
+
+model Progress {
+  id          String  @id @default(uuid())
+  userId      String
+  videoId     String
+  watchedTime Float
+  completed   Boolean @default(false)
+
+  user  User  @relation(fields: [userId], references: [id])
+  video Video @relation(fields: [videoId], references: [id])
+}
+
+model Note {
+  id        String   @id @default(uuid())
+  userId    String
+  videoId   String
+  timestamp Float
+  content   String
+  createdAt DateTime @default(now())
+
+  user  User  @relation(fields: [userId], references: [id])
+  video Video @relation(fields: [videoId], references: [id])
+}
