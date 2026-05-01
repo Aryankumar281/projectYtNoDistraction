@@ -62,8 +62,8 @@ model Progress {
   watchedTime Float
   completed   Boolean @default(false)
 
-  user  User  @relation(fields: [userId], references: [id])
-  video Video @relation(fields: [videoId], references: [id])
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  video Video @relation(fields: [videoId], references: [id], onDelete: Cascade)
 }
 
 model Note {
@@ -74,6 +74,6 @@ model Note {
   content   String
   createdAt DateTime @default(now())
 
-  user  User  @relation(fields: [userId], references: [id])
-  video Video @relation(fields: [videoId], references: [id])
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  video Video @relation(fields: [videoId], references: [id], onDelete: Cascade)
 }

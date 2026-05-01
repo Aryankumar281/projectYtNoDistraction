@@ -2,30 +2,71 @@ import axios from "axios";
 
 const API_KEY = process.env.YOUTUBE_API_KEY;
 
+interface YouTubePlaylistItem {
+  snippet: {
+    title: string;
+    resourceId: {
+      videoId: string;
+    };
+  };
+}
+
+interface YouTubePlaylistResponse {
+  items: YouTubePlaylistItem[];
+  nextPageToken?: string;
+}
+
+interface YouTubeVideoItem {
+  id: string;
+  snippet: {
+    title: string;
+  };
+}
+
+interface YouTubeVideoResponse {
+  items: YouTubeVideoItem[];
+}
+
 export const fetchPlaylistVideos = async (playlistId: string) => {
-  const url = `https://www.googleapis.com/youtube/v3/playlistItems`;
+  let videos: any[] = [];
+  let nextPageToken: string | null = null;
+  let order = 0;
 
-  const res = await axios.get(url, {
-    params: {
-      part: "snippet",
-      maxResults: 50,
-      playlistId,
-      key: API_KEY
+  while (true) {
+    const response: { data: YouTubePlaylistResponse } = await axios.get<YouTubePlaylistResponse>(
+      "https://www.googleapis.com/youtube/v3/playlistItems",
+      {
+        params: {
+          part: "snippet",
+          maxResults: 50,
+          playlistId,
+          pageToken: nextPageToken,
+          key: API_KEY
+        }
+      }
+    );
+
+    const items = response.data.items;
+
+    for (const item of items) {
+      videos.push({
+        youtubeId: item.snippet.resourceId.videoId,
+        title: item.snippet.title,
+        order: order++
+      });
     }
-  });
 
-  return res.data.items.map((item: any, index: number) => ({
-    youtubeId: item.snippet.resourceId.videoId,
-    title: item.snippet.title,
-    source: "youtube",
-    order: index
-  }));
+    nextPageToken = response.data.nextPageToken || null;
+    if (!nextPageToken) break;
+  }
+
+  return videos;
 };
 
 export const fetchVideoDetails = async (videoId: string) => {
   const url = `https://www.googleapis.com/youtube/v3/videos`;
 
-  const res = await axios.get(url, {
+  const response = await axios.get<YouTubeVideoResponse>(url, {
     params: {
       part: "snippet,contentDetails",
       id: videoId,
@@ -33,7 +74,7 @@ export const fetchVideoDetails = async (videoId: string) => {
     }
   });
 
-  const item = res.data.items[0];
+  const item = response.data.items[0];
   if (!item) throw new Error("Video not found");
 
   return {
