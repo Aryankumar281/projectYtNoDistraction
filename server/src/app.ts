@@ -4,6 +4,7 @@ import cors from "cors";
 import authRoutes from "./routes/auth.route";
 import playlistsRoutes from "./routes/playlist.route";
 import videoRoutes from "./routes/video.route";
+import progressRoutes from "./routes/progress.route";
 
 const app = express();
 
@@ -13,6 +14,7 @@ app.use(express.json());
 app.use("/api/auth", authRoutes);
 app.use("/api/playlist", playlistsRoutes);
 app.use("/api/video", videoRoutes);
+app.use("/api/progress", progressRoutes);
 
 app.get("/", (req:Request, res:Response) => {
   res.send("API is running....");

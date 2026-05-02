@@ -41,12 +41,18 @@ export const getPlaylists = async (req: Request, res: Response) => {
 
 export const getPlaylistById = async (req: Request, res: Response) => {
   const { id } = req.params;
+  const userId = (req as any).user.userId;
 
   const playlist = await prisma.playlist.findUnique({
     where: { id: String(id) },
     include: {
       videos: {
-        orderBy: { order: "asc" }
+        orderBy: { order: "asc" },
+        include: {
+          progress: {
+            where: { userId }
+          }
+        }
       }
     }
   });
